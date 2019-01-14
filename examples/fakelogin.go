@@ -20,55 +20,55 @@
 
 package main
 
-import(
-    "fmt"
-    "github.com/krockot/gopam/pam"
-    "os"
-    "bufio"
+import (
+	"bufio"
+	"fmt"
+	"os"
+
+	"github.com/colindev/gopam/pam"
 )
 
-func GetLine(prompt string) (string,bool) {
-    fmt.Print(prompt)
-    in := bufio.NewReader(os.Stdin)
-    input,err := in.ReadString('\n')
-    if err != nil {
-        return "",false
-    }
-    return input[:len(input)-1],true
+func GetLine(prompt string) (string, bool) {
+	fmt.Print(prompt)
+	in := bufio.NewReader(os.Stdin)
+	input, err := in.ReadString('\n')
+	if err != nil {
+		return "", false
+	}
+	return input[:len(input)-1], true
 }
 
 // Echo on/off is ignored; echo will always happen.
-func DumbPrompter(style int, msg string) (string,bool) {
-    switch style {
-        case pam.PROMPT_ECHO_OFF:
-            return GetLine(msg)
-        case pam.PROMPT_ECHO_ON:
-            return GetLine(msg)
-        case pam.ERROR_MSG:
-            fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
-            return "",true
-        case pam.TEXT_INFO:
-            fmt.Println(msg)
-            return "",true
-    }
-    return "",false
+func DumbPrompter(style int, msg string) (string, bool) {
+	switch style {
+	case pam.PROMPT_ECHO_OFF:
+		return GetLine(msg)
+	case pam.PROMPT_ECHO_ON:
+		return GetLine(msg)
+	case pam.ERROR_MSG:
+		fmt.Fprintf(os.Stderr, "Error: %s\n", msg)
+		return "", true
+	case pam.TEXT_INFO:
+		fmt.Println(msg)
+		return "", true
+	}
+	return "", false
 }
 
 func main() {
-    t,status := pam.Start("", "", pam.ResponseFunc(DumbPrompter))
-    if status != pam.SUCCESS {
-        fmt.Fprintf(os.Stderr, "Start() failed: %s\n", t.Error(status))
-        return
-    }
-    defer func(){ t.End(status) }()
+	t, status := pam.Start("", "", pam.ResponseFunc(DumbPrompter))
+	if status != pam.SUCCESS {
+		fmt.Fprintf(os.Stderr, "Start() failed: %s\n", t.Error(status))
+		return
+	}
+	defer func() { t.End(status) }()
 
-    status = t.Authenticate(0)
-    if status != pam.SUCCESS {
-        fmt.Fprintf(os.Stderr, "Auth failed: %s\n", t.Error(status))
-        return
-    }
+	status = t.Authenticate(0)
+	if status != pam.SUCCESS {
+		fmt.Fprintf(os.Stderr, "Auth failed: %s\n", t.Error(status))
+		return
+	}
 
-    fmt.Printf("Authentication succeeded!\n")
-    fmt.Printf("Goodbye, friend.\n")
+	fmt.Printf("Authentication succeeded!\n")
+	fmt.Printf("Goodbye, friend.\n")
 }
-
